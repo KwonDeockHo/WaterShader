@@ -48,20 +48,18 @@ void main(void)
 
 	vec2 totalDistortion = (texture(dudvMap, distortedTexCoords).rg * 2.0 - 1.0) * waveStrength * clamp(waterDepth/10.0, 0.0, 1.0);
 
-
-	vec2 flowmap = texture( flowMap, distortedTexCoords ).rg * 2.0f - 1.0f;
+	vec2 flowmap = texture( flowMap, distortedTexCoords).rg * 2.0f - 1.0f;
 
 	float phase0 = 0.1;
 	float phase1 = 0.2;
-
 	// Sample normal map.
-	vec3 normalT0 = texture(waveMap1, ( distortedTexCoords ) + flowmap * phase0 );
-	vec3 normalT1 = texture(waveMap2, ( distortedTexCoords ) + flowmap * phase1 );
-
-	float flowLerp = ( abs( 0.5 - FlowMapOffset0 ) / 0.5 );
-	float offset = lerp( normalT0, normalT1, flowLerp );
+	vec4 normalT0 = texture(waveMap1, ( distortedTexCoords ) + flowmap * phase0 );
+	vec4 normalT1 = texture(waveMap2, ( distortedTexCoords ) + flowmap * phase1 );
+	
+	float flowLerp = ( abs( 0.5 - phase0 ) / 0.5 );
+	
+	vec4 offset = mix( normalT0, normalT1, flowLerp);
 		
-
 	refractTexCoords += totalDistortion;
 	refractTexCoords = clamp(refractTexCoords, 0.001, 0.999);
 
@@ -89,7 +87,7 @@ void main(void)
 
 
 	out_Color = mix(reflectColor, refractColor, refractiveFactor);
-	out_Color = mix(out_Color, vec4(0.0, 0.3, 0.5, 1.0), 0.2f) + vec4(specularHighlights, 0.0);
+	out_Color = mix(out_Color, vec4(0.0, 0.3, 0.5, 1.0), 0.2f) + vec4(specularHighlights, offset);
 
 	out_Color.a = clamp(waterDepth/5.0, 0.0, 1.0);
 }
